@@ -1,0 +1,85 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.9.34714.143
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CurrencyTrackingSystem.API", "CurrencyTrackingSystem.API\CurrencyTrackingSystem.API.csproj", "{12782D1E-6F92-431B-BB61-31E71EA2BEC7}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CurrencyTrackingSystem.Application", "CurrencyTrackingSystem.Application\CurrencyTrackingSystem.Application.csproj", "{C0A1809C-26A9-4486-8078-C8C9071CE5B4}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CurrencyTrackingSystem.Domain", "CurrencyTrackingSystem.Domain\CurrencyTrackingSystem.Domain.csproj", "{D26E14E5-4C23-40B6-92D5-FEDA9D8E38A3}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CurrencyTrackingSystem.Infrastructure", "CurrencyTrackingSystem.Infrastructure\CurrencyTrackingSystem.Infrastructure.csproj", "{A1687E66-8B03-4702-9E50-DB4ECDD66140}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CurrencyTrackingSystem.BackgroundServices", "CurrencyTrackingSystem.BackgroundServices\CurrencyTrackingSystem.BackgroundServices.csproj", "{7BCD630A-E070-4356-85F6-0EB8E2BAEE51}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CurrencyTrackingSystem.MigrationService", "CurrencyTrackingSystem.MigrationService\CurrencyTrackingSystem.MigrationService.csproj", "{B296B87E-E97F-4364-B788-35649483648B}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{67131299-1518-4690-8A47-B1CEEEBCE747}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CurrencyTrackingSystem.UserService.Tests", "CurrencyTrackingSystem.UserService.Tests\CurrencyTrackingSystem.UserService.Tests.csproj", "{99ADF45D-727B-43FE-8E68-9A1F6038CB92}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CurrencyTrackingSystem.FinanceService.Tests", "CurrencyTrackingSystem.FinanceService.Tests\CurrencyTrackingSystem.FinanceService.Tests.csproj", "{F3D32C52-E773-4305-8431-F6408959D51B}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CurrencyTrackingSystem.UserService", "CurrencyTrackingSystem.UserService\CurrencyTrackingSystem.UserService.csproj", "{F6E75CEC-FB7C-4A24-BF49-243DE5B64FE9}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CurrencyTrackingSystem.FinanceService", "CurrencyTrackingSystem.FinanceService\CurrencyTrackingSystem.FinanceService.csproj", "{88A25C46-D16D-4306-B580-9656D84AE746}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{12782D1E-6F92-431B-BB61-31E71EA2BEC7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{12782D1E-6F92-431B-BB61-31E71EA2BEC7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{12782D1E-6F92-431B-BB61-31E71EA2BEC7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{12782D1E-6F92-431B-BB61-31E71EA2BEC7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C0A1809C-26A9-4486-8078-C8C9071CE5B4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C0A1809C-26A9-4486-8078-C8C9071CE5B4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C0A1809C-26A9-4486-8078-C8C9071CE5B4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C0A1809C-26A9-4486-8078-C8C9071CE5B4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D26E14E5-4C23-40B6-92D5-FEDA9D8E38A3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D26E14E5-4C23-40B6-92D5-FEDA9D8E38A3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D26E14E5-4C23-40B6-92D5-FEDA9D8E38A3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D26E14E5-4C23-40B6-92D5-FEDA9D8E38A3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A1687E66-8B03-4702-9E50-DB4ECDD66140}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A1687E66-8B03-4702-9E50-DB4ECDD66140}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A1687E66-8B03-4702-9E50-DB4ECDD66140}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A1687E66-8B03-4702-9E50-DB4ECDD66140}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7BCD630A-E070-4356-85F6-0EB8E2BAEE51}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7BCD630A-E070-4356-85F6-0EB8E2BAEE51}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7BCD630A-E070-4356-85F6-0EB8E2BAEE51}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7BCD630A-E070-4356-85F6-0EB8E2BAEE51}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B296B87E-E97F-4364-B788-35649483648B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B296B87E-E97F-4364-B788-35649483648B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B296B87E-E97F-4364-B788-35649483648B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B296B87E-E97F-4364-B788-35649483648B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{99ADF45D-727B-43FE-8E68-9A1F6038CB92}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{99ADF45D-727B-43FE-8E68-9A1F6038CB92}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{99ADF45D-727B-43FE-8E68-9A1F6038CB92}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{99ADF45D-727B-43FE-8E68-9A1F6038CB92}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F3D32C52-E773-4305-8431-F6408959D51B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F3D32C52-E773-4305-8431-F6408959D51B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F3D32C52-E773-4305-8431-F6408959D51B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F3D32C52-E773-4305-8431-F6408959D51B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F6E75CEC-FB7C-4A24-BF49-243DE5B64FE9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F6E75CEC-FB7C-4A24-BF49-243DE5B64FE9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F6E75CEC-FB7C-4A24-BF49-243DE5B64FE9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F6E75CEC-FB7C-4A24-BF49-243DE5B64FE9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{88A25C46-D16D-4306-B580-9656D84AE746}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{88A25C46-D16D-4306-B580-9656D84AE746}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{88A25C46-D16D-4306-B580-9656D84AE746}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{88A25C46-D16D-4306-B580-9656D84AE746}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{99ADF45D-727B-43FE-8E68-9A1F6038CB92} = {67131299-1518-4690-8A47-B1CEEEBCE747}
+		{F3D32C52-E773-4305-8431-F6408959D51B} = {67131299-1518-4690-8A47-B1CEEEBCE747}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {3A0328C5-43DC-40ED-BE40-09EC96657D99}
+	EndGlobalSection
+EndGlobal
