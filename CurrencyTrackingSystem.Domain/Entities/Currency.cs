@@ -11,7 +11,7 @@ namespace CurrencyTrackingSystem.Domain.Entities
     public class Currency
     {
         [Key]
-        public Guid Id { get; set; }
+        public Guid Id { get; set; } = Guid.NewGuid();
 
         [Required]
         [StringLength(100)]

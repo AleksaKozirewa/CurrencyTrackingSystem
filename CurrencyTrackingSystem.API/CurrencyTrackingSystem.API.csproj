@@ -5,6 +5,11 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
+  
+  <PropertyGroup>
+  <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  <NoWarn>$(NoWarn);1591</NoWarn>
+  </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Grpc.AspNetCore" Version="2.71.0" />
@@ -17,6 +22,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\CurrencyTrackingSystem.Application\CurrencyTrackingSystem.Application.csproj" />
+    <ProjectReference Include="..\CurrencyTrackingSystem.BackgroundServices\CurrencyTrackingSystem.BackgroundServices.csproj" />
     <ProjectReference Include="..\CurrencyTrackingSystem.Infrastructure\CurrencyTrackingSystem.Infrastructure.csproj" />
   </ItemGroup>
 
