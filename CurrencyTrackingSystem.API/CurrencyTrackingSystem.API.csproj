@@ -24,6 +24,7 @@
     <ProjectReference Include="..\CurrencyTrackingSystem.Application\CurrencyTrackingSystem.Application.csproj" />
     <ProjectReference Include="..\CurrencyTrackingSystem.BackgroundServices\CurrencyTrackingSystem.BackgroundServices.csproj" />
     <ProjectReference Include="..\CurrencyTrackingSystem.Infrastructure\CurrencyTrackingSystem.Infrastructure.csproj" />
+	<ProjectReference Include="..\CurrencyTrackingSystem.UserService\CurrencyTrackingSystem.UserService.csproj" />
   </ItemGroup>
 
 </Project>
