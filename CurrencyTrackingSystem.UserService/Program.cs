@@ -1,5 +1,6 @@
 ﻿using CurrencyTrackingSystem.Application.Interfaces;
-using CurrencyTrackingSystem.UserService.Services;
+using CurrencyTrackingSystem.Infrastructure.Services;
+using Microsoft.OpenApi.Models;
 
 namespace CurrencyTrackingSystem.UserService
 {
@@ -14,9 +15,7 @@ namespace CurrencyTrackingSystem.UserService
             builder.Services.AddEndpointsApiExplorer();
             //builder.Services.AddSwaggerGen();
 
-            
-
-            var app = builder.Build();
+            var app = builder.Build();           
 
             // Конфигурация middleware
             app.UseAuthorization();

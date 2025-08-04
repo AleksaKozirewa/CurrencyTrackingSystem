@@ -13,6 +13,8 @@ namespace CurrencyTrackingSystem.Infrastructure.Services
 {
     public class JwtService : IJwtService
     {
+        private readonly HashSet<string> _invalidatedTokens = new();
+
         private readonly string _secretKey;
         private readonly string _issuer;
         private readonly int _expiryMinutes;
@@ -74,6 +76,21 @@ namespace CurrencyTrackingSystem.Infrastructure.Services
             {
                 return null;
             }
+        }
+
+        public bool IsInvalidatedToken(string token, HashSet<string> invalidatedTokens)
+        {
+            if (invalidatedTokens.Contains(token))
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        public void InvalidateToken(string token)
+        {
+            _invalidatedTokens.Add(token);
         }
     }
 }

@@ -2,7 +2,6 @@ using CurrencyTrackingSystem.Application.Interfaces;
 using CurrencyTrackingSystem.BackgroundServices;
 using CurrencyTrackingSystem.Infrastructure.Persistence;
 using CurrencyTrackingSystem.Infrastructure.Services;
-using CurrencyTrackingSystem.UserService.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -19,28 +18,85 @@ namespace CurrencyTrackingSystem.API
 
             var builder = WebApplication.CreateBuilder(args);
 
+            // Добавление YARP
+            builder.Services.AddReverseProxy()
+                .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"));
+
             // Настройка JWT
-            builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-                .AddJwtBearer(options =>
+            //builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            //    .AddJwtBearer(options =>
+            //    {
+            //        options.TokenValidationParameters = new TokenValidationParameters
+            //        {
+            //            ValidateIssuer = true,
+            //            ValidateAudience = true,
+            //            ValidateLifetime = true,
+            //            ValidateIssuerSigningKey = true,
+            //            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+            //            ValidAudience = builder.Configuration["Jwt:Audience"],
+            //            IssuerSigningKey = new SymmetricSecurityKey(
+            //                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:SecretKey"]))
+            //        };
+            //    });
+
+            builder.Services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+            .AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters = new TokenValidationParameters
                 {
-                    options.TokenValidationParameters = new TokenValidationParameters
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer = builder.Configuration["Jwt:Issuer"],
+                    ValidAudience = builder.Configuration["Jwt:Audience"],
+                    IssuerSigningKey = new SymmetricSecurityKey(
+                        Encoding.UTF8.GetBytes(builder.Configuration["Jwt:SecretKey"])),
+                    ClockSkew = TimeSpan.Zero
+                };
+
+                options.Events = new JwtBearerEvents
+                {
+                    OnTokenValidated = async context =>
                     {
-                        ValidateIssuer = true,
-                        ValidateAudience = true,
-                        ValidateLifetime = true,
-                        ValidateIssuerSigningKey = true,
-                        ValidIssuer = builder.Configuration["Jwt:Issuer"],
-                        ValidAudience = builder.Configuration["Jwt:Issuer"],
-                        IssuerSigningKey = new SymmetricSecurityKey(
-                            Encoding.UTF8.GetBytes(builder.Configuration["Jwt:SecretKey"]))
-                    };
-                });
+                        var tokenBlacklistService = context.HttpContext.RequestServices
+                            .GetRequiredService<ITokenBlacklistService>();
+
+                        var token = context.Request.Headers["Authorization"]
+                            .ToString()
+                            .Replace("Bearer ", "");
+
+                        if (await tokenBlacklistService.IsTokenBlacklistedAsync(token))
+                        {
+                            context.Fail("Token has been revoked");
+                        }
+                    },
+                    OnAuthenticationFailed = context =>
+                    {
+                        if (context.Exception.GetType() == typeof(SecurityTokenExpiredException))
+                        {
+                            context.Response.Headers.Add("Token-Expired", "true");
+                        }
+                        return Task.CompletedTask;
+                    }
+                };
+            });
+
+            builder.Services.AddAuthorization(options =>
+            {
+                options.AddPolicy("requireJwtToken", policy =>
+                    policy.RequireAuthenticatedUser());
+            });
 
             // Настройка HttpClient для микросервисов
-            builder.Services.AddHttpClient("UserService", client =>
-            {
-                client.BaseAddress = new Uri(builder.Configuration["Services:UserService"]);
-            });
+            //builder.Services.AddHttpClient("UserService", client =>
+            //{
+            //    client.BaseAddress = new Uri(builder.Configuration["Services:UserService"]);
+            //});
 
             //builder.Services.AddHttpClient("FinanceService", client =>
             //{
@@ -50,10 +106,14 @@ namespace CurrencyTrackingSystem.API
             // 1. Регистрация сервисов
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen();
+            //builder.Services.AddSwaggerGen();
 
             builder.Services.AddScoped<IUserService, UsersService>(); // Регистрация сервиса
             builder.Services.AddSingleton<IJwtService, JwtService>();
+            builder.Services.AddMemoryCache();
+            builder.Services.AddSingleton<ITokenBlacklistService, TokenBlacklistService>();
+
+
 
             // 2. Настройка Swagger
             builder.Services.AddEndpointsApiExplorer();
@@ -61,9 +121,33 @@ namespace CurrencyTrackingSystem.API
             {
                 c.SwaggerDoc("v1", new OpenApiInfo
                 {
-                    Title = "Currency API",
+                    Title = "Currency Tracking System API",
                     Version = "v1",
-                    Description = "API для работы с курсами валют"
+                    Description = "Основной API для системы отслеживания валют"
+                });
+
+                c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+                {
+                    Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
+                    Name = "Authorization",
+                    In = ParameterLocation.Header,
+                    Type = SecuritySchemeType.ApiKey,
+                    Scheme = "Bearer"
+                });
+
+                c.AddSecurityRequirement(new OpenApiSecurityRequirement
+                {
+                    {
+                        new OpenApiSecurityScheme
+                        {
+                            Reference = new OpenApiReference
+                            {
+                                Type = ReferenceType.SecurityScheme,
+                                Id = "Bearer"
+                            }
+                        },
+                        Array.Empty<string>()
+                    }
                 });
             });
 
@@ -89,6 +173,7 @@ namespace CurrencyTrackingSystem.API
             });
 
             builder.Services.AddHostedService<CurrencyBackgroundService>();
+            builder.Services.AddHostedService<TokenCleanupBackgroundService>();
 
             var app = builder.Build();
 
@@ -108,75 +193,86 @@ namespace CurrencyTrackingSystem.API
             app.UseAuthentication();
             app.UseAuthorization();
 
+            app.MapWhen(ctx => !ctx.Request.Path.StartsWithSegments("/swagger"), appBuilder =>
+            {
+                appBuilder.UseRouting();
+                appBuilder.UseEndpoints(endpoints =>
+                {
+                    endpoints.MapReverseProxy();
+                });
+            });
+
             // Конфигурация middleware
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
                 app.UseSwaggerUI(c =>
                 {
-                    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Currency API v1");
+                    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Currency Tracking System API");
                 });
             }
 
             app.UseHttpsRedirection();
             app.MapControllers();
 
+            app.MapReverseProxy();
+
             // Маршрутизация запросов к микросервисам
-            app.Map("/api/users/{**rest}", async (HttpContext context) =>
-            {
-                await ProxyRequest(context, "UserService");
-            });
+            //app.Map("/api/users/{**rest}", async (HttpContext context) =>
+            //{
+            //    await ProxyRequest(context, "UserService");
+            //});
 
-            async Task ProxyRequest(HttpContext context, string serviceName)
-            {
-                // 1. Получаем HTTP-клиент для целевого сервиса
-                var clientFactory = context.RequestServices.GetRequiredService<IHttpClientFactory>();
-                var client = clientFactory.CreateClient(serviceName);
+            //async Task ProxyRequest(HttpContext context, string serviceName)
+            //{
+            //    // 1. Получаем HTTP-клиент для целевого сервиса
+            //    var clientFactory = context.RequestServices.GetRequiredService<IHttpClientFactory>();
+            //    var client = clientFactory.CreateClient(serviceName);
 
-                // 2. Создаем новый запрос к целевому сервису
-                var request = new HttpRequestMessage
-                {
-                    Method = new HttpMethod(context.Request.Method),
-                    RequestUri = new Uri($"{client.BaseAddress}{context.Request.Path}{context.Request.QueryString}")
-                };
+            //    // 2. Создаем новый запрос к целевому сервису
+            //    var request = new HttpRequestMessage
+            //    {
+            //        Method = new HttpMethod(context.Request.Method),
+            //        RequestUri = new Uri($"{client.BaseAddress}{context.Request.Path}{context.Request.QueryString}")
+            //    };
 
-                // 3. Копируем заголовки из оригинального запроса
-                foreach (var header in context.Request.Headers)
-                {
-                    request.Headers.TryAddWithoutValidation(header.Key, header.Value.ToArray());
-                }
+            //    // 3. Копируем заголовки из оригинального запроса
+            //    foreach (var header in context.Request.Headers)
+            //    {
+            //        request.Headers.TryAddWithoutValidation(header.Key, header.Value.ToArray());
+            //    }
 
-                // 4. Копируем тело запроса (если есть)
-                if (context.Request.ContentLength > 0)
-                {
-                    using var ms = new MemoryStream();
-                    await context.Request.Body.CopyToAsync(ms);
-                    ms.Position = 0;
-                    request.Content = new StreamContent(ms);
-                    request.Content.Headers.ContentType =
-                        new System.Net.Http.Headers.MediaTypeHeaderValue(context.Request.ContentType);
-                }
+            //    // 4. Копируем тело запроса (если есть)
+            //    if (context.Request.ContentLength > 0)
+            //    {
+            //        using var ms = new MemoryStream();
+            //        await context.Request.Body.CopyToAsync(ms);
+            //        ms.Position = 0;
+            //        request.Content = new StreamContent(ms);
+            //        request.Content.Headers.ContentType =
+            //            new System.Net.Http.Headers.MediaTypeHeaderValue(context.Request.ContentType);
+            //    }
 
-                // 5. Отправляем запрос к целевому сервису
-                using var response = await client.SendAsync(request);
+            //    // 5. Отправляем запрос к целевому сервису
+            //    using var response = await client.SendAsync(request);
 
-                // 6. Копируем ответ обратно клиенту
-                context.Response.StatusCode = (int)response.StatusCode;
+            //    // 6. Копируем ответ обратно клиенту
+            //    context.Response.StatusCode = (int)response.StatusCode;
 
-                foreach (var header in response.Headers)
-                {
-                    context.Response.Headers[header.Key] = header.Value.ToArray();
-                }
+            //    foreach (var header in response.Headers)
+            //    {
+            //        context.Response.Headers[header.Key] = header.Value.ToArray();
+            //    }
 
-                if (response.Content.Headers.ContentType != null)
-                {
-                    context.Response.ContentType = response.Content.Headers.ContentType.ToString();
-                }
+            //    if (response.Content.Headers.ContentType != null)
+            //    {
+            //        context.Response.ContentType = response.Content.Headers.ContentType.ToString();
+            //    }
 
-                await response.Content.CopyToAsync(context.Response.Body);
-            }
+            //    await response.Content.CopyToAsync(context.Response.Body);
+            //}
 
-            
+
 
             app.Run();
         }

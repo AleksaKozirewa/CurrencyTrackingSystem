@@ -20,13 +20,16 @@ namespace CurrencyTrackingSystem.UserService.Controllers
     public class UserController : ControllerBase
     {
         private readonly IUserService _userService;
+        private readonly ITokenBlacklistService _tokenBlacklistService;
         private readonly ILogger<UserController> _logger;
 
         public UserController(
             IUserService userService,
+            ITokenBlacklistService tokenBlacklistService,
             ILogger<UserController> logger)
         {
             _userService = userService;
+            _tokenBlacklistService = tokenBlacklistService;
             _logger = logger;
         }
 
@@ -79,8 +82,15 @@ namespace CurrencyTrackingSystem.UserService.Controllers
         {
             // В JWT логаут реализуется на клиенте путём удаления токена
             // Здесь можно добавить логирование выхода
-            _logger.LogInformation("Пользователь вышел из системы");
-            return Ok(new { Message = "Logout successful" });
+            //_logger.LogInformation("Пользователь вышел из системы");
+            //return Ok(new { Message = "Logout successful" });
+
+            var token = HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+
+            _tokenBlacklistService.BlacklistTokenAsync(token);
+            //_userService.Logout(token);
+
+            return Ok(new { Message = "Token invalidated" });
         }
 
         [HttpGet("healthcheck")]

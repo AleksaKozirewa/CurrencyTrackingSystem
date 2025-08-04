@@ -11,5 +11,7 @@ namespace CurrencyTrackingSystem.Application.Interfaces
     {
         string GenerateToken(Guid userId);
         int? ValidateToken(string token);
+        bool IsInvalidatedToken(string token, HashSet<string> invalidatedTokens);
+        void InvalidateToken(string token);
     }
 }

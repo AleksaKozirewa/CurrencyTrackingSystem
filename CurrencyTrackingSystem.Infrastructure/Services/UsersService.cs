@@ -9,7 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CurrencyTrackingSystem.UserService.Services
+namespace CurrencyTrackingSystem.Infrastructure.Services
 {
     public class UsersService : IUserService
     {
@@ -50,6 +50,16 @@ namespace CurrencyTrackingSystem.UserService.Services
                 return null;
 
             return _jwtService.GenerateToken(user.Id);
+        }
+
+        public async Task IsInvalidatedToken(string token, HashSet<string> invalidatedTokens)
+        {
+            _jwtService.IsInvalidatedToken(token, invalidatedTokens);
+        }
+
+        public async Task Logout(string token)
+        {
+            _jwtService.InvalidateToken(token);
         }
     }
 }
