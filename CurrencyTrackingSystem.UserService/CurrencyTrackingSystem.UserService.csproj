@@ -20,8 +20,4 @@
     <ProjectReference Include="..\CurrencyTrackingSystem.Infrastructure\CurrencyTrackingSystem.Infrastructure.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Services\" />
-  </ItemGroup>
-
 </Project>

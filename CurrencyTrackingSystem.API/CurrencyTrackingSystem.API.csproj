@@ -12,6 +12,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="AutoMapper" Version="15.0.1" />
+    <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.0" />
     <PackageReference Include="Grpc.AspNetCore" Version="2.71.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.18" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.3" />
@@ -25,7 +27,6 @@
     <ProjectReference Include="..\CurrencyTrackingSystem.Application\CurrencyTrackingSystem.Application.csproj" />
     <ProjectReference Include="..\CurrencyTrackingSystem.BackgroundServices\CurrencyTrackingSystem.BackgroundServices.csproj" />
     <ProjectReference Include="..\CurrencyTrackingSystem.Infrastructure\CurrencyTrackingSystem.Infrastructure.csproj" />
-	<ProjectReference Include="..\CurrencyTrackingSystem.UserService\CurrencyTrackingSystem.UserService.csproj" />
   </ItemGroup>
 
 </Project>

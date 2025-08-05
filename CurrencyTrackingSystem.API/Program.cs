@@ -1,9 +1,14 @@
+using CurrencyTrackingSystem.API.Controllers;
+using CurrencyTrackingSystem.API.Filters;
 using CurrencyTrackingSystem.Application.Interfaces;
 using CurrencyTrackingSystem.BackgroundServices;
+using CurrencyTrackingSystem.Domain.Interfaces;
 using CurrencyTrackingSystem.Infrastructure.Persistence;
+using CurrencyTrackingSystem.Infrastructure.Repositories;
 using CurrencyTrackingSystem.Infrastructure.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
@@ -104,14 +109,19 @@ namespace CurrencyTrackingSystem.API
             //});
 
             // 1. Регистрация сервисов
+            //builder.Services.AddAutoMapper(typeof(Program));
             builder.Services.AddControllers();
+            builder.Services.AddControllers()
+    .AddApplicationPart(typeof(CurrencyController).Assembly);
             builder.Services.AddEndpointsApiExplorer();
             //builder.Services.AddSwaggerGen();
 
-            builder.Services.AddScoped<IUserService, UsersService>(); // Регистрация сервиса
-            builder.Services.AddSingleton<IJwtService, JwtService>();
-            builder.Services.AddMemoryCache();
-            builder.Services.AddSingleton<ITokenBlacklistService, TokenBlacklistService>();
+            //builder.Services.AddScoped<IUserService, UsersService>(); // Регистрация сервиса
+            //builder.Services.AddSingleton<IJwtService, JwtService>();
+            //builder.Services.AddScoped<ICurrencyService, CurrencyService>();
+            //builder.Services.AddScoped<ICurrencyRepository, CurrencyRepository>();
+            //builder.Services.AddMemoryCache();
+            //builder.Services.AddSingleton<ITokenBlacklistService, TokenBlacklistService>();
 
 
 
@@ -126,16 +136,26 @@ namespace CurrencyTrackingSystem.API
                     Description = "Основной API для системы отслеживания валют"
                 });
 
-                c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-                {
-                    Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
-                    Name = "Authorization",
-                    In = ParameterLocation.Header,
-                    Type = SecuritySchemeType.ApiKey,
-                    Scheme = "Bearer"
-                });
+                //c.SwaggerDoc("finance", new OpenApiInfo { Title = "Finance API", Version = "v1" });
 
-                c.AddSecurityRequirement(new OpenApiSecurityRequirement
+                //c.SwaggerDoc("gateway", new OpenApiInfo
+                //{
+                //    Title = "API Gateway v1",
+                //    Version = "v1",
+                //    Description = "API Gateway v1"
+                //});
+
+                    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+                    {
+                        Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
+                        Name = "Authorization",
+                        In = ParameterLocation.Header,
+                        Type = SecuritySchemeType.ApiKey,
+                        Scheme = "Bearer",
+                        BearerFormat = "JWT"
+                    });
+
+                    c.AddSecurityRequirement(new OpenApiSecurityRequirement
                 {
                     {
                         new OpenApiSecurityScheme
@@ -149,20 +169,23 @@ namespace CurrencyTrackingSystem.API
                         Array.Empty<string>()
                     }
                 });
+
+                    // Важно для YARP!
+                    c.DocumentFilter<YarpSwaggerFilter>();
             });
 
-            // Стандартная регистрация DbContext БЕЗ указания MigrationsAssembly
-            builder.Services.AddDbContext<AppDbContext>(options =>
-                options.UseNpgsql(
-                    builder.Configuration.GetConnectionString("DefaultConnection"),
-                    npgsqlOptions =>
-                    {
-                        npgsqlOptions.EnableRetryOnFailure(
-                            maxRetryCount: 5,
-                            maxRetryDelay: TimeSpan.FromSeconds(30),
-                            errorCodesToAdd: null);
-                        npgsqlOptions.CommandTimeout(300); // 10 минут
-                    }));
+            //// Стандартная регистрация DbContext БЕЗ указания MigrationsAssembly
+            //builder.Services.AddDbContext<AppDbContext>(options =>
+            //    options.UseNpgsql(
+            //        builder.Configuration.GetConnectionString("DefaultConnection"),
+            //        npgsqlOptions =>
+            //        {
+            //            npgsqlOptions.EnableRetryOnFailure(
+            //                maxRetryCount: 5,
+            //                maxRetryDelay: TimeSpan.FromSeconds(30),
+            //                errorCodesToAdd: null);
+            //            npgsqlOptions.CommandTimeout(300); // 10 минут
+            //        }));
 
             // Регистрация HttpClient для ЦБ РФ
             builder.Services.AddHttpClient("CbrApi", client =>
@@ -175,32 +198,35 @@ namespace CurrencyTrackingSystem.API
             builder.Services.AddHostedService<CurrencyBackgroundService>();
             builder.Services.AddHostedService<TokenCleanupBackgroundService>();
 
+            // Добавьте эту регистрацию перед builder.Build()
+            builder.Services.AddDbContext<AppDbContext>(options =>
+                options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+
             var app = builder.Build();
 
-            if (app.Environment.IsDevelopment())
-            {
-                using var scope = app.Services.CreateScope();
-                try
-                {
-                    scope.ServiceProvider.GetRequiredService<IUserService>();
-                }
-                catch (Exception ex)
-                {
-                    throw new Exception("Ошибка конфигурации DI: " + ex.Message);
-                }
-            }
+            //if (app.Environment.IsDevelopment())
+            //{
+            //    using var scope = app.Services.CreateScope();
+            //    try
+            //    {
+            //        scope.ServiceProvider.GetRequiredService<IUserService>();
+            //    }
+            //    catch (Exception ex)
+            //    {
+            //        throw new Exception("Ошибка конфигурации DI: " + ex.Message);
+            //    }
+            //}
 
-            app.UseAuthentication();
-            app.UseAuthorization();
 
-            app.MapWhen(ctx => !ctx.Request.Path.StartsWithSegments("/swagger"), appBuilder =>
-            {
-                appBuilder.UseRouting();
-                appBuilder.UseEndpoints(endpoints =>
-                {
-                    endpoints.MapReverseProxy();
-                });
-            });
+
+            //app.MapWhen(ctx => !ctx.Request.Path.StartsWithSegments("/swagger"), appBuilder =>
+            //{
+            //    appBuilder.UseRouting();
+            //    appBuilder.UseEndpoints(endpoints =>
+            //    {
+            //        endpoints.MapReverseProxy();
+            //    });
+            //});
 
             // Конфигурация middleware
             if (app.Environment.IsDevelopment())
@@ -209,13 +235,38 @@ namespace CurrencyTrackingSystem.API
                 app.UseSwaggerUI(c =>
                 {
                     c.SwaggerEndpoint("/swagger/v1/swagger.json", "Currency Tracking System API");
+                    // Для работы через IIS Express прокси
+                    c.RoutePrefix = "swagger";
                 });
             }
 
+            app.UseWhen(ctx => !ctx.Request.Path.StartsWithSegments("/swagger"), appBuilder =>
+            {
+                appBuilder.UseRouting();
+                appBuilder.UseEndpoints(endpoints =>
+                {
+                    endpoints.MapReverseProxy();
+                });
+            });
+
+            //if (app.Environment.IsDevelopment())
+            //{
+            //    app.UseSwagger();
+            //    app.UseSwaggerUI(c => {
+            //        c.SwaggerEndpoint("/swagger/v1/swagger.json", "API Gateway v1");
+            //        // Для работы через IIS Express прокси
+            //        c.RoutePrefix = "swagger";
+            //    });
+            //}
+
             app.UseHttpsRedirection();
+            //app.UseAuthentication();
+            //app.UseAuthorization();
             app.MapControllers();
 
-            app.MapReverseProxy();
+            app.UseCors(x => x.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
+
+            //app.MapReverseProxy();
 
             // Маршрутизация запросов к микросервисам
             //app.Map("/api/users/{**rest}", async (HttpContext context) =>

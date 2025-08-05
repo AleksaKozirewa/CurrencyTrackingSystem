@@ -1,6 +1,10 @@
 ﻿using CurrencyTrackingSystem.Application.Interfaces;
+using CurrencyTrackingSystem.Infrastructure.Persistence;
 using CurrencyTrackingSystem.Infrastructure.Services;
+using CurrencyTrackingSystem.UserService.Controllers;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
+using System.Reflection;
 
 namespace CurrencyTrackingSystem.UserService
 {
@@ -10,12 +14,55 @@ namespace CurrencyTrackingSystem.UserService
         {
             var builder = WebApplication.CreateBuilder(args);
 
+            builder.Services.AddScoped<IUserService, UsersService>(); // Регистрация сервиса
+            builder.Services.AddScoped<IJwtService, JwtService>();
+            builder.Services.AddScoped<ITokenBlacklistService, TokenBlacklistService>();
+            builder.Services.AddMemoryCache();
+
             // Конфигурация сервисов
-            builder.Services.AddControllers();
+            builder.Services.AddControllers()
+                .AddApplicationPart(typeof(UserController).Assembly); ;
             builder.Services.AddEndpointsApiExplorer();
             //builder.Services.AddSwaggerGen();
 
-            var app = builder.Build();           
+            builder.Services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("users", new OpenApiInfo
+                {
+                    Title = "Users Service API",
+                    Version = "v1",
+                    Description = "Handles user authentication and management"
+                });
+
+                c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+                {
+                    Name = "Authorization",
+                    Type = SecuritySchemeType.ApiKey,
+                    Scheme = "Bearer",
+                    BearerFormat = "JWT",
+                    In = ParameterLocation.Header
+                });
+
+                //c.EnableAnnotations();
+
+                //// XML комментарии (если нужно)
+                //var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+                //var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+                //c.IncludeXmlComments(xmlPath);
+            });
+
+            builder.Services.AddDbContext<AppDbContext>(options =>
+            options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+            var app = builder.Build();
+
+            // Middleware должен быть подключен ДО MapControllers()
+            app.UseSwagger(); // Генерирует /swagger/v1/swagger.json
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("/swagger/users/swagger.json", "Users Service API v1");
+                c.RoutePrefix = "swagger"; // Делает Swagger UI доступным по /swagger
+            });
 
             // Конфигурация middleware
             app.UseAuthorization();
