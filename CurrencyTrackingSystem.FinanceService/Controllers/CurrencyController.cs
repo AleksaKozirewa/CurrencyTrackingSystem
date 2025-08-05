@@ -61,7 +61,7 @@ namespace CurrencyTrackingSystem.FinanceService.Controllers
         {
             try
             {
-                var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+                var userId = dto.UserId;
                 await _currencyService.UpdateFavoriteCurrenciesAsync(userId, dto);
                 return NoContent();
             }
