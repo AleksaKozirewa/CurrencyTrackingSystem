@@ -87,7 +87,7 @@ namespace CurrencyTrackingSystem.FinanceService
             //    };
             //});
 
-            //builder.Services.AddAuthorization();
+            
 
             //builder.Services.AddSwaggerGen();
 
@@ -121,15 +121,46 @@ namespace CurrencyTrackingSystem.FinanceService
                     In = ParameterLocation.Header
                 });
 
-                c.DocInclusionPredicate((docName, apiDesc) =>
+                c.AddSecurityRequirement(new OpenApiSecurityRequirement
                 {
-                    if (docName == "v1")
-                        return !apiDesc.RelativePath.Contains("v2");
-                    //if (docName == "v2")
-                    //    return apiDesc.RelativePath.Contains("v2");
-                    return true;
+                    {
+                        new OpenApiSecurityScheme
+                        {
+                            Reference = new OpenApiReference
+                            {
+                                Type = ReferenceType.SecurityScheme,
+                                Id = "Bearer"
+                            }
+                        },
+                        Array.Empty<string>()
+                    }
                 });
+
+                //c.DocInclusionPredicate((docName, apiDesc) =>
+                //{
+                //    if (docName == "v1")
+                //        return !apiDesc.RelativePath.Contains("v2");
+                //    //if (docName == "v2")
+                //    //    return apiDesc.RelativePath.Contains("v2");
+                //    return true;
+                //});
             });
+
+            // Упрощенная версия аутентификации (только проверка токена)
+            builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddJwtBearer(options =>
+                {
+                    options.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidateIssuerSigningKey = true,
+                        IssuerSigningKey = new SymmetricSecurityKey(
+                            Encoding.UTF8.GetBytes(builder.Configuration["Jwt:SecretKey"])),
+                        ValidateIssuer = false, // Микросервис доверяет Gateway
+                        ValidateAudience = false
+                    };
+                });
+
+            builder.Services.AddAuthorization();
 
             // Стандартная регистрация DbContext БЕЗ указания MigrationsAssembly
             builder.Services.AddDbContext<AppDbContext>(options =>

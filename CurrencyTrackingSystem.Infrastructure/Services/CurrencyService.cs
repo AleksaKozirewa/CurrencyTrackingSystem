@@ -23,7 +23,10 @@ namespace CurrencyTrackingSystem.Infrastructure.Services
         public async Task<IEnumerable<CurrencyDto>> GetUserFavoriteCurrenciesAsync(Guid userId)
         {
             var currencies = await _currencyRepository.GetUserFavoritesAsync(userId);
-            return currencies.Select(MapToDto);
+            var currencyDtos = currencies.Select(MapToDto).ToList();
+            currencyDtos.ForEach(x => x.IsFavorite = true);
+
+            return currencyDtos;
         }
 
         public async Task<IEnumerable<CurrencyDto>> GetAllCurrenciesAsync(Guid? userId = null)
@@ -69,9 +72,7 @@ namespace CurrencyTrackingSystem.Infrastructure.Services
             {
                 Id = currency.Id,
                 Name = currency.Name,
-                Rate = currency.Rate,
-                // Другие свойства
-                //IsFavorite = currency.UserFavorites // если есть
+                Rate = currency.Rate
             };
         }
     }

@@ -1,5 +1,6 @@
 using CurrencyTrackingSystem.API.Controllers;
 using CurrencyTrackingSystem.API.Filters;
+using CurrencyTrackingSystem.API.Service;
 using CurrencyTrackingSystem.Application.Interfaces;
 using CurrencyTrackingSystem.BackgroundServices;
 using CurrencyTrackingSystem.Domain.Interfaces;
@@ -23,9 +24,9 @@ namespace CurrencyTrackingSystem.API
 
             var builder = WebApplication.CreateBuilder(args);
 
-            // Добавление YARP
-            builder.Services.AddReverseProxy()
-                .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"));
+            builder.Services.AddMemoryCache();
+
+            builder.Services.AddSingleton<ITokenBlacklistService, GatewayTokenBlacklistService>();
 
             // Настройка JWT
             //builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -48,6 +49,7 @@ namespace CurrencyTrackingSystem.API
             {
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
                 options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
             })
             .AddJwtBearer(options =>
             {
@@ -60,8 +62,8 @@ namespace CurrencyTrackingSystem.API
                     ValidIssuer = builder.Configuration["Jwt:Issuer"],
                     ValidAudience = builder.Configuration["Jwt:Audience"],
                     IssuerSigningKey = new SymmetricSecurityKey(
-                        Encoding.UTF8.GetBytes(builder.Configuration["Jwt:SecretKey"])),
-                    ClockSkew = TimeSpan.Zero
+                        Encoding.UTF8.GetBytes(builder.Configuration["Jwt:SecretKey"]))
+                    //ClockSkew = TimeSpan.Zero
                 };
 
                 options.Events = new JwtBearerEvents
@@ -96,6 +98,10 @@ namespace CurrencyTrackingSystem.API
                 options.AddPolicy("requireJwtToken", policy =>
                     policy.RequireAuthenticatedUser());
             });
+
+            // Добавление YARP
+            builder.Services.AddReverseProxy()
+                .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"));
 
             // Настройка HttpClient для микросервисов
             //builder.Services.AddHttpClient("UserService", client =>
@@ -145,17 +151,17 @@ namespace CurrencyTrackingSystem.API
                 //    Description = "API Gateway v1"
                 //});
 
-                    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-                    {
-                        Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
-                        Name = "Authorization",
-                        In = ParameterLocation.Header,
-                        Type = SecuritySchemeType.ApiKey,
-                        Scheme = "Bearer",
-                        BearerFormat = "JWT"
-                    });
+                c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+                {
+                    Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
+                    Name = "Authorization",
+                    In = ParameterLocation.Header,
+                    Type = SecuritySchemeType.ApiKey,
+                    Scheme = "Bearer",
+                    BearerFormat = "JWT"
+                });
 
-                    c.AddSecurityRequirement(new OpenApiSecurityRequirement
+                c.AddSecurityRequirement(new OpenApiSecurityRequirement
                 {
                     {
                         new OpenApiSecurityScheme
@@ -170,8 +176,8 @@ namespace CurrencyTrackingSystem.API
                     }
                 });
 
-                    // Важно для YARP!
-                    c.DocumentFilter<YarpSwaggerFilter>();
+                // Важно для YARP!
+                c.DocumentFilter<YarpSwaggerFilter>();
             });
 
             //// Стандартная регистрация DbContext БЕЗ указания MigrationsAssembly
@@ -240,14 +246,33 @@ namespace CurrencyTrackingSystem.API
                 });
             }
 
+            app.UseHttpsRedirection();
+            app.UseRouting();
+
+            app.UseCors(x => x.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
+
+            app.UseAuthentication();
+            app.UseAuthorization();
+
+            app.UseExceptionHandler("/error");
+
             app.UseWhen(ctx => !ctx.Request.Path.StartsWithSegments("/swagger"), appBuilder =>
             {
-                appBuilder.UseRouting();
-                appBuilder.UseEndpoints(endpoints =>
-                {
-                    endpoints.MapReverseProxy();
-                });
+                appBuilder.UseEndpoints(endpoints => endpoints.MapReverseProxy());
             });
+
+            //app.UseWhen(ctx => !ctx.Request.Path.StartsWithSegments("/swagger"), appBuilder =>
+            //{
+            //    appBuilder.UseRouting();
+
+            //    appBuilder.UseAuthentication();
+            //    appBuilder.UseAuthorization();
+
+            //    appBuilder.UseEndpoints(endpoints =>
+            //    {
+            //        endpoints.MapReverseProxy();
+            //    });
+            //});
 
             //if (app.Environment.IsDevelopment())
             //{
@@ -259,12 +284,12 @@ namespace CurrencyTrackingSystem.API
             //    });
             //}
 
-            app.UseHttpsRedirection();
+            //app.UseHttpsRedirection();
             //app.UseAuthentication();
             //app.UseAuthorization();
             app.MapControllers();
 
-            app.UseCors(x => x.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
+            
 
             //app.MapReverseProxy();
 

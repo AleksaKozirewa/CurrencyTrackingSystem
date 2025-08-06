@@ -10,7 +10,7 @@ namespace CurrencyTrackingSystem.FinanceService.Controllers
 {
     [ApiController]
     [Route("api/currencies")]
-    //[Authorize]
+    [Authorize] 
     public class CurrencyController : ControllerBase
     {
         private readonly ICurrencyService _currencyService;
@@ -30,6 +30,7 @@ namespace CurrencyTrackingSystem.FinanceService.Controllers
             try
             {
                 var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+                var userIdFromToken = User.FindFirstValue(ClaimTypes.NameIdentifier);
                 var currencies = await _currencyService.GetAllCurrenciesAsync(userId);
                 return Ok(currencies);
             }
@@ -45,7 +46,15 @@ namespace CurrencyTrackingSystem.FinanceService.Controllers
         {
             try
             {
-                var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+                //var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+                var userIdFromToken = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (string.IsNullOrWhiteSpace(userIdFromToken))
+                {
+                    return BadRequest("User ID claim is missing");
+                }
+
+                var userId = Guid.Parse(userIdFromToken);
+
                 var currencies = await _currencyService.GetUserFavoriteCurrenciesAsync(userId);
                 return Ok(currencies);
             }
@@ -59,9 +68,18 @@ namespace CurrencyTrackingSystem.FinanceService.Controllers
         [HttpPut("favorites")]
         public async Task<IActionResult> UpdateFavoriteCurrencies([FromBody] UpdateFavoriteCurrenciesDto dto)
         {
+            //var claims = User.Claims.Select(c => new { c.Type, c.Value }).ToList();
+
+            var userIdFromToken = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrWhiteSpace(userIdFromToken))
+            {
+                return BadRequest("User ID claim is missing");
+            }
+
+            var userId = Guid.Parse(userIdFromToken);
+
             try
             {
-                var userId = dto.UserId;
                 await _currencyService.UpdateFavoriteCurrenciesAsync(userId, dto);
                 return NoContent();
             }

@@ -33,8 +33,9 @@ namespace CurrencyTrackingSystem.Infrastructure.Services
 
             var claims = new[]
             {
-            new Claim(ClaimTypes.Name, userId.ToString())
-        };
+                new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
+                new Claim(ClaimTypes.Name, userId.ToString())
+            };
 
             var token = new JwtSecurityToken(
                 issuer: _issuer,

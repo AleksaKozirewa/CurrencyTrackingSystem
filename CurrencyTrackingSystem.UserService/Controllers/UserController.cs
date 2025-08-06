@@ -33,6 +33,7 @@ namespace CurrencyTrackingSystem.UserService.Controllers
             _logger = logger;
         }
 
+        [AllowAnonymous]
         [HttpPost("register")]
         public async Task<IActionResult> Register(UserRegistrationDto dto)
         {
@@ -56,6 +57,7 @@ namespace CurrencyTrackingSystem.UserService.Controllers
             }
         }
 
+        [AllowAnonymous]
         [HttpPost("login")]
         public async Task<IActionResult> Login(UserLoginDto dto)
         {
@@ -76,8 +78,8 @@ namespace CurrencyTrackingSystem.UserService.Controllers
             }
         }
 
-        [HttpPost("logout")]
         [Authorize]
+        [HttpPost("logout")]
         public IActionResult Logout()
         {
             // В JWT логаут реализуется на клиенте путём удаления токена

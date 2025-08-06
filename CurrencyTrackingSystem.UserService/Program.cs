@@ -2,9 +2,12 @@
 using CurrencyTrackingSystem.Infrastructure.Persistence;
 using CurrencyTrackingSystem.Infrastructure.Services;
 using CurrencyTrackingSystem.UserService.Controllers;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Reflection;
+using System.Text;
 
 namespace CurrencyTrackingSystem.UserService
 {
@@ -43,6 +46,21 @@ namespace CurrencyTrackingSystem.UserService
                     In = ParameterLocation.Header
                 });
 
+                c.AddSecurityRequirement(new OpenApiSecurityRequirement
+                {
+                    {
+                        new OpenApiSecurityScheme
+                        {
+                            Reference = new OpenApiReference
+                            {
+                                Type = ReferenceType.SecurityScheme,
+                                Id = "Bearer"
+                            }
+                        },
+                        Array.Empty<string>()
+                    }
+                });
+
                 //c.EnableAnnotations();
 
                 //// XML комментарии (если нужно)
@@ -50,6 +68,22 @@ namespace CurrencyTrackingSystem.UserService
                 //var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
                 //c.IncludeXmlComments(xmlPath);
             });
+
+            // Упрощенная версия аутентификации (только проверка токена)
+            builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddJwtBearer(options =>
+                {
+                    options.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidateIssuerSigningKey = true,
+                        IssuerSigningKey = new SymmetricSecurityKey(
+                            Encoding.UTF8.GetBytes(builder.Configuration["Jwt:SecretKey"])),
+                        ValidateIssuer = false, // Микросервис доверяет Gateway
+                        ValidateAudience = false
+                    };
+                });
+
+            builder.Services.AddAuthorization();
 
             builder.Services.AddDbContext<AppDbContext>(options =>
             options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));

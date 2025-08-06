@@ -23,8 +23,8 @@
       "commandName": "Project",
       "dotnetRunMessages": true,
       "launchBrowser": true,
-      //"launchUrl": "swagger",
-      "applicationUrl": "http://localhost:5000;https://localhost:5001",
+      "launchUrl": "swagger",
+      "applicationUrl": "http://localhost:5000",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
         "Jwt__SecretKey": "your_very_secure_key_here_at_least_32_chars",
