@@ -27,7 +27,14 @@ namespace CurrencyTrackingSystem.Infrastructure.Services
         public async Task<AuthResult> RegisterUserAsync(UserRegistrationDto dto)
         {
             if (await _context.Users.AnyAsync(u => u.Name == dto.Username))
-                return new AuthResult { Success = false, ErrorMessage = "Username already exists" };
+            {
+                return new AuthResult { Success = false, ErrorMessage = "Пользователь с таким именем уже существует." };
+            }       
+
+            if (string.IsNullOrWhiteSpace(dto.Username) || string.IsNullOrWhiteSpace(dto.Password))
+            {
+                return new AuthResult { Success = false, ErrorMessage = "Имя пользователя и пароль должны быть заполнены." };
+            }
 
             var user = new User
             {
