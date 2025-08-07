@@ -224,7 +224,12 @@ namespace CurrencyTrackingSystem.UserService.Tests
         public async Task RegisterUserAsync_EmptyOrWhitespaceValues_ReturnsError(string username, string password)
         {
             // Arrange
-            using (var db = new AppDbContext(_dbContextOptions))
+            var dbName = $"TestDb_{Guid.NewGuid()}"; // ”никальное им€ базы дл€ каждого теста
+            var options = new DbContextOptionsBuilder<AppDbContext>()
+                .UseInMemoryDatabase(databaseName: dbName)
+                .Options;
+
+            await using (var db = new AppDbContext(options))
             {
                 var service = new UsersService(db, _mockJwtService.Object);
                 var dto = new UserRegistrationDto { Username = username, Password = password };

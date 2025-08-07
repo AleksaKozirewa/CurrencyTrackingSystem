@@ -12,8 +12,6 @@ namespace CurrencyTrackingSystem.Application.Interfaces
     {
         Task<IEnumerable<CurrencyDto>> GetUserFavoriteCurrenciesAsync(Guid userId);
 
-        Task<IEnumerable<CurrencyDto>> GetAllCurrenciesAsync(Guid? userId = null);
-
         Task UpdateFavoriteCurrenciesAsync(Guid userId, UpdateFavoriteCurrenciesDto dto);
     }
 }

@@ -29,25 +29,6 @@ namespace CurrencyTrackingSystem.Infrastructure.Services
             return currencyDtos;
         }
 
-        public async Task<IEnumerable<CurrencyDto>> GetAllCurrenciesAsync(Guid? userId = null)
-        {
-            var currencies = await _currencyRepository.GetAllAsync();
-            var currencyDtos = currencies.Select(MapToDto).ToList();
-
-            if (userId.HasValue)
-            {
-                var favoriteCurrencies = await _currencyRepository.GetUserFavoritesAsync(userId.Value);
-                var favoriteIds = favoriteCurrencies.Select(c => c.Id).ToHashSet();
-
-                foreach (var currency in currencyDtos)
-                {
-                    currency.IsFavorite = favoriteIds.Contains(currency.Id);
-                }
-            }
-
-            return currencyDtos;
-        }
-
         public async Task UpdateFavoriteCurrenciesAsync(Guid userId, UpdateFavoriteCurrenciesDto dto)
         {
             // Реализация без изменений, так как не использует маппинг
