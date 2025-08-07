@@ -24,22 +24,22 @@ namespace CurrencyTrackingSystem.FinanceService.Controllers
             _logger = logger;
         }
 
-        [HttpGet]
-        public async Task<IActionResult> GetAllCurrencies()
-        {
-            try
-            {
-                var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
-                var userIdFromToken = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                var currencies = await _currencyService.GetAllCurrenciesAsync(userId);
-                return Ok(currencies);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error getting all currencies");
-                return StatusCode(500, "Internal server error");
-            }
-        }
+        //[HttpGet]
+        //public async Task<IActionResult> GetAllCurrencies()
+        //{
+        //    try
+        //    {
+        //        var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+        //        var userIdFromToken = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        //        var currencies = await _currencyService.GetAllCurrenciesAsync(userId);
+        //        return Ok(currencies);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger.LogError(ex, "Error getting all currencies");
+        //        return StatusCode(500, "Internal server error");
+        //    }
+        //}
 
         [HttpGet("favorites")]
         public async Task<IActionResult> GetUserFavoriteCurrencies()
@@ -90,10 +90,10 @@ namespace CurrencyTrackingSystem.FinanceService.Controllers
             }
         }
 
-        [HttpGet("healthcheck")]
-        public IActionResult HealthCheck()
-        {
-            return Ok(new { Status = "AuthService is healthy" });
-        }
+        //[HttpGet("healthcheck")]
+        //public IActionResult HealthCheck()
+        //{
+        //    return Ok(new { Status = "AuthService is healthy" });
+        //}
     }
 }

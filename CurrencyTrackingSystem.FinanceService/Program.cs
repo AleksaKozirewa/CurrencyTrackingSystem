@@ -5,11 +5,9 @@ using CurrencyTrackingSystem.Infrastructure.Repositories;
 using CurrencyTrackingSystem.Infrastructure.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
-using AutoMapper;
 
 namespace CurrencyTrackingSystem.FinanceService
 {
@@ -91,10 +89,10 @@ namespace CurrencyTrackingSystem.FinanceService
 
             //builder.Services.AddSwaggerGen();
 
-            builder.Services.AddSwaggerGen(c =>
-            {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "Finance Service", Version = "v1" });
-            });
+            //builder.Services.AddSwaggerGen(c =>
+            //{
+            //    c.SwaggerDoc("v1", new OpenApiInfo { Title = "Finance Service", Version = "v1" });
+            //});
 
             builder.Services.AddSwaggerGen(c =>
             {
@@ -102,7 +100,7 @@ namespace CurrencyTrackingSystem.FinanceService
                 {
                     Title = "Finance Service API",
                     Version = "v1",
-                    Description = "Provides currency rates and financial data"
+                    Description = "Сервис финансов"
                 });
 
                 //c.SwaggerDoc("v2", new OpenApiInfo
@@ -179,8 +177,16 @@ namespace CurrencyTrackingSystem.FinanceService
 
             // Middleware должен быть подключен ДО MapControllers()
             app.UseSwagger(); // Генерирует /swagger/v1/swagger.json
-            app.UseSwaggerUI(); // Не требуется для API Gateway
+            //app.UseSwaggerUI(c =>
+            //    c.SwaggerEndpoint("/swagger/users/swagger.json", "Users Service API v1");
+            //    c.RoutePrefix = "swagger"; // Делает Swagger UI доступным по /swagger); // Не требуется для API Gateway
+            //});
 
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("/swagger/finance/swagger.json", "Finance Service API v1");
+                c.RoutePrefix = "swagger"; // Делает Swagger UI доступным по /swagger
+            });
             // Конфигурация middleware
             app.UseAuthorization();
             app.MapControllers();

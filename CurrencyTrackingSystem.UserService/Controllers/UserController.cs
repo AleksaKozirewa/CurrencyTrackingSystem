@@ -95,10 +95,10 @@ namespace CurrencyTrackingSystem.UserService.Controllers
             return Ok(new { Message = "Token invalidated" });
         }
 
-        [HttpGet("healthcheck")]
-        public IActionResult HealthCheck()
-        {
-            return Ok(new { Status = "AuthService is healthy" });
-        }
+        //[HttpGet("healthcheck")]
+        //public IActionResult HealthCheck()
+        //{
+        //    return Ok(new { Status = "AuthService is healthy" });
+        //}
     }
 }
