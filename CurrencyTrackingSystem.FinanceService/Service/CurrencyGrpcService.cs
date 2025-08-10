@@ -1,9 +1,5 @@
 ﻿using CurrencyTrackingSystem.Application.Interfaces;
-using CurrencyTrackingSystem.Infrastructure.Services;
-using Microsoft.AspNetCore.Authorization;
-using CurrencyTrackingSystem.FinanceService;
 using Grpc.Core;
-using Microsoft.AspNetCore.Authorization;
 
 namespace CurrencyTrackingSystem.FinanceService.Service
 {
@@ -28,7 +24,7 @@ namespace CurrencyTrackingSystem.FinanceService.Service
                 throw new RpcException(new Status(StatusCode.Unauthenticated, "Token is missing"));
 
             var token = authHeader.Value.Replace("Bearer ", "");
-            var principal = _jwtService.ValidateToken(token); // Ваш метод проверки JWT
+            var principal = _jwtService.ValidateToken(token);
             if (principal == Guid.Empty)
                 throw new RpcException(new Status(StatusCode.Unauthenticated, "Invalid token"));
 
@@ -44,7 +40,7 @@ namespace CurrencyTrackingSystem.FinanceService.Service
             response.Currencies.AddRange(currencies.Select(c => new CurrencyItem
             {
                 Name = c.Name,
-                Rate = (double)c.Rate // Лучше использовать decimal в proto!
+                Rate = (double)c.Rate
             }));
 
             return response;

@@ -1,6 +1,4 @@
 using CurrencyTrackingSystem.BackgroundServices;
-using CurrencyTrackingSystem.Infrastructure.Persistence;
-using Microsoft.EntityFrameworkCore;
 
 class Program
 {
@@ -10,6 +8,3 @@ class Program
         builder.Services.AddHostedService<CurrencyBackgroundService>();
     }
 }
-
-//var host = builder.Build();
-//host.Run();

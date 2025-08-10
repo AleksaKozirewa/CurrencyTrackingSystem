@@ -2,12 +2,8 @@
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace CurrencyTrackingSystem.Infrastructure.Services
 {
@@ -47,7 +43,7 @@ namespace CurrencyTrackingSystem.Infrastructure.Services
                     AbsoluteExpiration = expiry
                 });
 
-                // Для распределённых систем (если используется)
+                // Для распределённых систем
                 if (_distributedCache != null)
                 {
                     await _distributedCache.SetAsync(

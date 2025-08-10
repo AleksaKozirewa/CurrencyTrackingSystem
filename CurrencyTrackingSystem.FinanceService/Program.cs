@@ -4,8 +4,6 @@ using CurrencyTrackingSystem.FinanceService.Service;
 using CurrencyTrackingSystem.Infrastructure.Persistence;
 using CurrencyTrackingSystem.Infrastructure.Repositories;
 using CurrencyTrackingSystem.Infrastructure.Services;
-using Grpc.Core.Interceptors;
-using Grpc.Core;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -13,7 +11,6 @@ using Microsoft.OpenApi.Models;
 using System.Text;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using System.Net;
-//using CurrencyTrackingSystem.API.Controllers;
 
 namespace CurrencyTrackingSystem.FinanceService
 {
@@ -50,85 +47,10 @@ namespace CurrencyTrackingSystem.FinanceService
 
             // Конфигурация сервисов
             builder.Services.AddControllers();
-
-            builder.Services.AddHttpContextAccessor(); // Добавить эту строку
+            builder.Services.AddHttpContextAccessor();
             builder.Services.AddGrpc();
-            //builder.Services.AddGrpc(options =>
-            //{
-            //    options.EnableDetailedErrors = true;
-            //    options.Interceptors.Add<GrpcAuthInterceptor>(); // Добавляем интерцептор для JWT
-            //});
 
             builder.Services.AddEndpointsApiExplorer();
-
-            //builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-            //.AddJwtBearer(options =>
-            //{
-            //    options.TokenValidationParameters = new TokenValidationParameters
-            //    {
-            //        ValidateIssuerSigningKey = true,
-            //        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(
-            //            builder.Configuration["Jwt:SecretKey"])),
-            //        ValidateIssuer = false,
-            //        ValidateAudience = false
-            //    };
-            //});
-
-            //builder.Services.AddAuthentication(options =>
-            //{
-            //    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-            //    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-            //})
-            //.AddJwtBearer(options =>
-            //{
-            //    options.TokenValidationParameters = new TokenValidationParameters
-            //    {
-            //        ValidateIssuer = true,
-            //        ValidateAudience = true,
-            //        ValidateLifetime = true,
-            //        ValidateIssuerSigningKey = true,
-            //        ValidIssuer = builder.Configuration["Jwt:Issuer"],
-            //        ValidAudience = builder.Configuration["Jwt:Audience"],
-            //        IssuerSigningKey = new SymmetricSecurityKey(
-            //            Encoding.UTF8.GetBytes(builder.Configuration["Jwt:SecretKey"])),
-            //        ClockSkew = TimeSpan.Zero
-            //    };
-
-            //    options.Events = new JwtBearerEvents
-            //    {
-            //        OnTokenValidated = async context =>
-            //        {
-            //            var tokenBlacklistService = context.HttpContext.RequestServices
-            //                .GetRequiredService<ITokenBlacklistService>();
-
-            //            var token = context.Request.Headers["Authorization"]
-            //                .ToString()
-            //                .Replace("Bearer ", "");
-
-            //            if (await tokenBlacklistService.IsTokenBlacklistedAsync(token))
-            //            {
-            //                context.Fail("Token has been revoked");
-            //            }
-            //        },
-            //        OnAuthenticationFailed = context =>
-            //        {
-            //            if (context.Exception.GetType() == typeof(SecurityTokenExpiredException))
-            //            {
-            //                context.Response.Headers.Add("Token-Expired", "true");
-            //            }
-            //            return Task.CompletedTask;
-            //        }
-            //    };
-            //});
-
-
-
-            //builder.Services.AddSwaggerGen();
-
-            //builder.Services.AddSwaggerGen(c =>
-            //{
-            //    c.SwaggerDoc("v1", new OpenApiInfo { Title = "Finance Service", Version = "v1" });
-            //});
 
             builder.Services.AddSwaggerGen(c =>
             {
@@ -138,13 +60,6 @@ namespace CurrencyTrackingSystem.FinanceService
                     Version = "v1",
                     Description = "Сервис финансов"
                 });
-
-                //c.SwaggerDoc("v2", new OpenApiInfo
-                //{
-                //    Title = "Finance Service API",
-                //    Version = "v2",
-                //    Description = "New version with additional features"
-                //});
 
                 c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 {
@@ -169,18 +84,8 @@ namespace CurrencyTrackingSystem.FinanceService
                         Array.Empty<string>()
                     }
                 });
-
-                //c.DocInclusionPredicate((docName, apiDesc) =>
-                //{
-                //    if (docName == "v1")
-                //        return !apiDesc.RelativePath.Contains("v2");
-                //    //if (docName == "v2")
-                //    //    return apiDesc.RelativePath.Contains("v2");
-                //    return true;
-                //});
             });
 
-            // Упрощенная версия аутентификации (только проверка токена)
             builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddJwtBearer(options =>
                 {
@@ -194,9 +99,6 @@ namespace CurrencyTrackingSystem.FinanceService
                     };
                 });
 
-            // Регистрируем gRPC сервис
-            //builder.Services.AddGrpc();
-            //builder.Services.AddGrpcReflection();
 
             builder.Services.AddAuthorization();
 
@@ -216,65 +118,23 @@ namespace CurrencyTrackingSystem.FinanceService
             var app = builder.Build();
 
             app.UseCors("AllowAll");
-
-            // Middleware должен быть подключен ДО MapControllers()
-            app.UseSwagger(); // Генерирует /swagger/v1/swagger.json
-            //app.UseSwaggerUI(c =>
-            //    c.SwaggerEndpoint("/swagger/users/swagger.json", "Users Service API v1");
-            //    c.RoutePrefix = "swagger"; // Делает Swagger UI доступным по /swagger); // Не требуется для API Gateway
-            //});
+            app.UseSwagger(); 
 
             app.UseSwaggerUI(c =>
             {
                 c.SwaggerEndpoint("/swagger/finance/swagger.json", "Finance Service API v1");
                 c.RoutePrefix = "swagger"; // Делает Swagger UI доступным по /swagger
             });
+
             // Конфигурация middleware
             app.UseAuthorization();
             app.MapControllers();
 
             // Настраиваем gRPC endpoint
-            //app.MapGrpcService<CurrencyGrpcService>();
             app.MapGrpcService<CurrencyGrpcService>();
             app.MapGet("/", () => "Finance gRPC Service is running.");
-
-            // Для тестирования (можно удалить в production)
-            //app.MapGrpcReflectionService();
-
-            //app.MapGet("/", () => "Communication with gRPC endpoints must be made through a gRPC client.");
-
 
             app.Run();
         }
     }
-
-    //public class GrpcAuthInterceptor : Interceptor
-    //{
-    //    private readonly IHttpContextAccessor _httpContextAccessor;
-
-    //    public GrpcAuthInterceptor(IHttpContextAccessor httpContextAccessor)
-    //    {
-    //        _httpContextAccessor = httpContextAccessor;
-    //    }
-
-    //    public override async Task<TResponse> UnaryServerHandler<TRequest, TResponse>(
-    //    TRequest request, ServerCallContext context, UnaryServerMethod<TRequest, TResponse> continuation)
-    //    {
-    //        var httpContext = _httpContextAccessor.HttpContext;
-    //        var token = context.RequestHeaders.FirstOrDefault(h => h.Key == "authorization")?.Value;
-
-    //        if (string.IsNullOrEmpty(token))
-    //        {
-    //            throw new RpcException(new Status(StatusCode.Unauthenticated, "Token is required"));
-    //        }
-
-    //        // Проверка валидности токена
-    //        if (!httpContext.User.Identity.IsAuthenticated)
-    //        {
-    //            throw new RpcException(new Status(StatusCode.Unauthenticated, "Invalid token"));
-    //        }
-
-    //        return await continuation(request, context);
-    //    }
-    //}
 }

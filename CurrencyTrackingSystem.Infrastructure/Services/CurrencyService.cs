@@ -1,13 +1,7 @@
-﻿using AutoMapper;
-using CurrencyTrackingSystem.Application.DTO.Finance;
+﻿using CurrencyTrackingSystem.Application.DTO.Finance;
 using CurrencyTrackingSystem.Application.Interfaces;
 using CurrencyTrackingSystem.Domain.Entities;
 using CurrencyTrackingSystem.Domain.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace CurrencyTrackingSystem.Infrastructure.Services
 {

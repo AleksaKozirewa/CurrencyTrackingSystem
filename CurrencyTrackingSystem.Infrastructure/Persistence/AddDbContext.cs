@@ -16,10 +16,6 @@ namespace CurrencyTrackingSystem.Infrastructure.Persistence
         public DbSet<User> Users => Set<User>();
         public DbSet<UserFavoriteCurrency> UserFavoriteCurrencies => Set<UserFavoriteCurrency>();
 
-        // Можно полностью удалить OnModelCreating, если:
-        // 1. Атрибутов достаточно для конфигурации
-        // 2. Вас устраивают настройки по умолчанию
-
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             // Только то, что нельзя выразить через атрибуты

@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using CurrencyTrackingSystem.Infrastructure.Services;
 using Grpc.Core;
 using Microsoft.AspNetCore.Authorization;
 using CurrencyTrackingSystem.FinanceService;
@@ -31,8 +30,6 @@ namespace CurrencyTrackingSystem.API.Controllers
                     .ToString()
                     .Replace("Bearer ", "");
 
-                //var request = new CurrencyRequest { UserId = userId , Token = $"Bearer {token}" };
-
                 var request = new CurrencyRequest { UserId = userId };
 
                 var headers = new Metadata
@@ -56,45 +53,3 @@ namespace CurrencyTrackingSystem.API.Controllers
         }
     }
 }
-
-//[HttpGet("user/{userId}")]
-//        [Authorize]
-//        public async Task<IActionResult> GetUserCurrencies(int userId)
-//        {
-//            try
-//            {
-//                var request = new CurrencyRequest
-//                {
-//                    UserId = userId.ToString(),
-//                    Token = HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "")
-//                };
-
-//                var response = await _grpcClient.GetUserCurrenciesAsync(request);
-//                return Ok(response.Currencies);
-//            }
-//            catch (RpcException ex)
-//            {
-//                _logger.LogError(ex, "gRPC call failed");
-//                //return StatusCode(MapGrpcErrorToHttpStatus(ex.StatusCode), ex.Status.Detail);
-
-//                return StatusCode(500);
-//            }
-//        }
-
-//        //private static int MapGrpcErrorToHttpStatus(StatusCode grpcStatusCode)
-//        //{
-//        //    return grpcStatusCode switch
-//        //    {
-//        //        StatusCode.OK => 200,
-//        //        StatusCode.InvalidArgument => 400,
-//        //        StatusCode.Unauthenticated => 401,
-//        //        StatusCode.PermissionDenied => 403,
-//        //        StatusCode.NotFound => 404,
-//        //        StatusCode.AlreadyExists => 409,
-//        //        StatusCode.FailedPrecondition => 412,
-//        //        StatusCode.Internal => 500,
-//        //        StatusCode.Unimplemented => 501,
-//        //        StatusCode.Unavailable => 503,
-//        //        _ => 500
-//        //    };
-//        //}

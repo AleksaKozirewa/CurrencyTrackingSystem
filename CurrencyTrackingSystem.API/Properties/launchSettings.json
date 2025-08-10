@@ -5,7 +5,7 @@
     "anonymousAuthentication": true, // Разрешаем анонимный доступ
     "iisExpress": {
       "applicationUrl": "http://localhost:5000", // HTTP-порт
-      "sslPort": 44300, // HTTPS-порт (случайный в диапазоне 44300-44399)
+      "sslPort": 44300, // HTTPS-порт
       "sslProtocols": "Tls12,Tls13" // Безопасные протоколы
     }
   },
@@ -31,36 +31,7 @@
         "Jwt__Issuer": "CurrencyTracker",
         "Jwt__Audience": "CurrencyTracker",
         "Jwt__ExpiryMinutes": "60"
-        //"ConnectionStrings__DefaultConnection": "Host=localhost;Port=5432;Database=currency_tracking_db;Username=currency_tracking_user;Password=admin;"
       }
     }
-    //"http": {
-    //  "commandName": "Project",
-    //  "dotnetRunMessages": true,
-    //  "launchBrowser": true,
-    //  "launchUrl": "swagger",
-    //  "applicationUrl": "http://localhost:5139",
-    //  "environmentVariables": {
-    //    "ASPNETCORE_ENVIRONMENT": "Development"
-    //  }
-    //},
-    //"https": {
-    //  "commandName": "Project",
-    //  "dotnetRunMessages": true,
-    //  "launchBrowser": true,
-    //  "launchUrl": "swagger",
-    //  "applicationUrl": "https://localhost:7033;http://localhost:5139",
-    //  "environmentVariables": {
-    //    "ASPNETCORE_ENVIRONMENT": "Development"
-    //  }
-    //},
-    //"IIS Express": {
-    //  "commandName": "IISExpress",
-    //  "launchBrowser": true,
-    //  "launchUrl": "swagger",
-    //  "environmentVariables": {
-    //    "ASPNETCORE_ENVIRONMENT": "Development"
-    //  }
-    //}
   }
 }

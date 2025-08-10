@@ -7,28 +7,6 @@ using System.Xml.Linq;
 
 namespace CurrencyTrackingSystem.BackgroundServices
 {
-    //public class Worker : BackgroundService
-    //{
-    //    private readonly ILogger<Worker> _logger;
-
-    //    public Worker(ILogger<Worker> logger)
-    //    {
-    //        _logger = logger;
-    //    }
-
-    //    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
-    //    {
-    //        while (!stoppingToken.IsCancellationRequested)
-    //        {
-    //            if (_logger.IsEnabled(LogLevel.Information))
-    //            {
-    //                _logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);
-    //            }
-    //            await Task.Delay(1000, stoppingToken);
-    //        }
-    //    }
-    //}
-
     public class CurrencyBackgroundService : BackgroundService
     {
         private readonly ILogger<CurrencyBackgroundService> _logger;
@@ -78,14 +56,9 @@ namespace CurrencyTrackingSystem.BackgroundServices
             var response = await client.GetAsync("scripts/XML_daily.asp", ct);
             response.EnsureSuccessStatusCode();
 
-            // Вариант 1 (предпочтительный)
             using var stream = await response.Content.ReadAsStreamAsync(ct);
             using var reader = new StreamReader(stream, Encoding.GetEncoding(1251));
             return await reader.ReadToEndAsync();
-
-            // ИЛИ Вариант 2
-            // var bytes = await response.Content.ReadAsByteArrayAsync(ct);
-            // return Encoding.GetEncoding(1251).GetString(bytes);
         }
 
         private IEnumerable<Currency> ParseCurrencyData(string xmlData)

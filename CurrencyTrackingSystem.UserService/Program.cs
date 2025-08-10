@@ -16,16 +16,15 @@ namespace CurrencyTrackingSystem.UserService
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            builder.Services.AddScoped<IUserService, UsersService>(); // Регистрация сервиса
+            builder.Services.AddScoped<IUserService, UsersService>();
             builder.Services.AddScoped<IJwtService, JwtService>();
             builder.Services.AddScoped<ITokenBlacklistService, TokenBlacklistService>();
             builder.Services.AddMemoryCache();
 
-            // Конфигурация сервисов
+           
             builder.Services.AddControllers()
                 .AddApplicationPart(typeof(UserController).Assembly); ;
             builder.Services.AddEndpointsApiExplorer();
-            //builder.Services.AddSwaggerGen();
 
             builder.Services.AddSwaggerGen(c =>
             {
@@ -59,13 +58,6 @@ namespace CurrencyTrackingSystem.UserService
                         Array.Empty<string>()
                     }
                 });
-
-                //c.EnableAnnotations();
-
-                //// XML комментарии (если нужно)
-                //var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
-                //var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
-                //c.IncludeXmlComments(xmlPath);
             });
 
             // Упрощенная версия аутентификации (только проверка токена)
@@ -89,7 +81,6 @@ namespace CurrencyTrackingSystem.UserService
 
             var app = builder.Build();
 
-            // Middleware должен быть подключен ДО MapControllers()
             app.UseSwagger(); // Генерирует /swagger/v1/swagger.json
             app.UseSwaggerUI(c =>
             {

@@ -5,97 +5,6 @@ using Yarp.ReverseProxy.Configuration;
 
 namespace CurrencyTrackingSystem.API.Filters
 {
-    //    public class YarpSwaggerFilter : IDocumentFilter
-    //    {
-    //        private readonly IProxyConfigProvider _proxyConfig;
-
-    //        public YarpSwaggerFilter(IProxyConfigProvider proxyConfig)
-    //        {
-    //            _proxyConfig = proxyConfig;
-    //        }
-
-    //        public void Apply(OpenApiDocument swaggerDoc, DocumentFilterContext context)
-    //        {
-    //            var proxyConfig = _proxyConfig.GetConfig();
-
-    //            foreach (var route in proxyConfig.Routes)
-    //            {
-    //                // Новый способ получения пути
-    //                var path = route.Match.Path;
-
-    //                if (string.IsNullOrEmpty(path))
-    //                    continue;
-
-    //                // Убедимся, что путь начинается с /
-    //                if (!path.StartsWith("/"))
-    //                    path = "/" + path;
-
-    //                if (path.EndsWith("{**catch-all}"))
-    //                {
-    //                    path = path.Replace("{**catch-all}", "{rest}");
-    //                }
-
-    //                if (!swaggerDoc.Paths.ContainsKey($"{path}"))
-    //                {
-    //                    var pathItem = new OpenApiPathItem
-    //                    {
-    //                        Operations = new Dictionary<OperationType, OpenApiOperation>
-    //                        {
-    //                            [OperationType.Get] = CreateOperation(route.RouteId),
-    //                            [OperationType.Post] = CreateOperation(route.RouteId),
-    //                            [OperationType.Put] = CreateOperation(route.RouteId),
-    //                            [OperationType.Delete] = CreateOperation(route.RouteId)
-    //                        }
-    //                    };
-
-    //                    //swaggerDoc.Paths.Add($"/{path}", pathItem);
-    //                    swaggerDoc.Paths.Add($"{path}", pathItem);
-    //                }
-    //            }
-    //        }
-
-    //        private OpenApiOperation CreateOperation(string routeId)
-    //        {
-    //            var operation = new OpenApiOperation
-    //            {
-    //                Tags = new List<OpenApiTag> { new() { Name = routeId } },
-    //                Parameters = new List<OpenApiParameter>
-    //                {
-    //                    new()
-    //                    {
-    //                        Name = "Authorization",
-    //                        In = ParameterLocation.Header,
-    //                        Required = true,
-    //                        Schema = new OpenApiSchema { Type = "string" }
-    //                    }
-    //                },
-    //                Responses = new OpenApiResponses
-    //                {
-    //                    ["200"] = new OpenApiResponse { Description = "Success" },
-    //                    ["401"] = new OpenApiResponse { Description = "Unauthorized" },
-    //                    ["403"] = new OpenApiResponse { Description = "Forbidden" }
-    //                }
-    //            };
-
-    //            // Добавляем RequestBody для POST/PUT
-    //            if (routeId.EndsWith("POST") || routeId.EndsWith("PUT"))
-    //            {
-    //                operation.RequestBody = new OpenApiRequestBody
-    //                {
-    //                    Content = new Dictionary<string, OpenApiMediaType>
-    //                    {
-    //                        ["application/json"] = new OpenApiMediaType
-    //                        {
-    //                            Schema = new OpenApiSchema { Type = "object" }
-    //                        }
-    //                    }
-    //                };
-    //            }
-
-    //            return operation;
-    //        }
-    //    }
-
     public class YarpSwaggerFilter : IDocumentFilter
     {
         private readonly IProxyConfigProvider _proxyConfig;
@@ -258,9 +167,6 @@ namespace CurrencyTrackingSystem.API.Filters
                 };
             }
 
-            // Добавляем специальные заголовки из трансформаций
-            //AddTransformHeaders(operation, route);
-
             return operation;
         }
 
@@ -283,6 +189,10 @@ namespace CurrencyTrackingSystem.API.Filters
                         "password": "string"
                     }
                     """),
+
+                OperationType.Post when routeId.Contains("logout") =>
+                    OpenApiAnyFactory.CreateFromJson(string.Empty),
+
                 OperationType.Put when routeId.Contains("favorites") =>
                     OpenApiAnyFactory.CreateFromJson("""
                     {
@@ -293,33 +203,12 @@ namespace CurrencyTrackingSystem.API.Filters
                     """),
 
                     _ => OpenApiAnyFactory.CreateFromJson("""
-                {
-                    "property1": "value1",
-                    "property2": 123
-                }
-                """)
+                    {
+                        "property1": "value1",
+                        "property2": 123
+                    }
+                    """)
             };
         }
-
-        //private void AddTransformHeaders(OpenApiOperation operation, RouteConfig route)
-        //{
-        //    if (route.Transforms == null) return;
-
-        //    foreach (var transform in route.Transforms)
-        //    {
-        //        if (transform.TryGetValue("RequestHeader", out var headerName) &&
-        //            !string.IsNullOrEmpty(headerName))
-        //        {
-        //            operation.Parameters.Add(new OpenApiParameter
-        //            {
-        //                Name = headerName,
-        //                In = ParameterLocation.Header,
-        //                Required = false,
-        //                Schema = new OpenApiSchema { Type = "string" },
-        //                Description = "Automatically added by YARP transform"
-        //            });
-        //        }
-        //    }
-        //}
     }
 }

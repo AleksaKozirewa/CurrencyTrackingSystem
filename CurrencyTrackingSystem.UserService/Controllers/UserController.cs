@@ -82,18 +82,6 @@ namespace CurrencyTrackingSystem.UserService.Controllers
         [HttpPost("logout")]
         public IActionResult Logout()
         {
-            // В JWT логаут реализуется на клиенте путём удаления токена
-            // Здесь можно добавить логирование выхода
-            //_logger.LogInformation("Пользователь вышел из системы");
-            //return Ok(new { Message = "Logout successful" });
-
-            //var token = HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
-
-            //_tokenBlacklistService.BlacklistTokenAsync(token);
-            ////_userService.Logout(token);
-
-            //return Ok(new { Message = "Token invalidated" });
-
             var token = HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
 
             // Добавляем токен в черный список
@@ -109,11 +97,5 @@ namespace CurrencyTrackingSystem.UserService.Controllers
                 Details = "Token has been invalidated. Please remove it from client side."
             });
         }
-
-        //[HttpGet("healthcheck")]
-        //public IActionResult HealthCheck()
-        //{
-        //    return Ok(new { Status = "AuthService is healthy" });
-        //}
     }
 }

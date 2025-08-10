@@ -1,6 +1,5 @@
 ﻿using CurrencyTrackingSystem.Application.Interfaces;
 using Microsoft.Extensions.Caching.Memory;
-using System.Collections.Concurrent;
 using System.IdentityModel.Tokens.Jwt;
 
 namespace CurrencyTrackingSystem.API.Service
