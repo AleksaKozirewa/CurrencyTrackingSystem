@@ -10,7 +10,7 @@ namespace CurrencyTrackingSystem.Application.Interfaces
     public interface IJwtService
     {
         string GenerateToken(Guid userId);
-        int? ValidateToken(string token);
+        Guid ValidateToken(string token);
         bool IsInvalidatedToken(string token, HashSet<string> invalidatedTokens);
         void InvalidateToken(string token);
     }

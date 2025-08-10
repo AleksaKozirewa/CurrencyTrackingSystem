@@ -4,9 +4,11 @@ using CurrencyTrackingSystem.API.Service;
 using CurrencyTrackingSystem.Application.Interfaces;
 using CurrencyTrackingSystem.BackgroundServices;
 using CurrencyTrackingSystem.Domain.Interfaces;
+using CurrencyTrackingSystem.FinanceService;
 using CurrencyTrackingSystem.Infrastructure.Persistence;
 using CurrencyTrackingSystem.Infrastructure.Repositories;
 using CurrencyTrackingSystem.Infrastructure.Services;
+using Grpc.Core;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -27,6 +29,43 @@ namespace CurrencyTrackingSystem.API
             builder.Services.AddMemoryCache();
 
             builder.Services.AddSingleton<ITokenBlacklistService, GatewayTokenBlacklistService>();
+
+            builder.Services.AddHttpContextAccessor(); // В начало конфигурации
+
+            // Добавьте в DI контейнер
+            builder.Services.AddGrpcClient<CurrencyNewService.CurrencyNewServiceClient>(options =>
+            {
+                options.Address = new Uri(builder.Configuration["Grpc:FinanceServiceUrl"]);
+            })
+            .ConfigureChannel(o =>
+            {
+                if (builder.Environment.IsDevelopment())
+                {
+                    // Разрешаем небезопасные соединения в development
+                    var httpHandler = new HttpClientHandler
+                    {
+                        ServerCertificateCustomValidationCallback =
+                            HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+                    };
+                    o.HttpHandler = httpHandler;
+                    o.Credentials = ChannelCredentials.Insecure;
+                }
+            });
+            //.AddCallCredentials(async (context, metadata) =>
+            //{
+            //    // Получаем IHttpContextAccessor через ServiceProvider
+            //    var serviceProvider = context.ServiceProvider;
+            //    var httpContextAccessor = serviceProvider.GetRequiredService<IHttpContextAccessor>();
+
+            //    // Получаем токен из текущего HTTP-контекста
+            //    var token = httpContextAccessor.HttpContext?.Request.Headers["Authorization"].FirstOrDefault();
+
+            //    if (!string.IsNullOrEmpty(token))
+            //    {
+            //        // Добавляем токен в метаданные gRPC вызова
+            //        metadata.Add("Authorization", token);
+            //    }
+            //});
 
             // Настройка JWT
             //builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -102,6 +141,21 @@ namespace CurrencyTrackingSystem.API
             // Добавление YARP
             builder.Services.AddReverseProxy()
                 .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"));
+
+            //builder.Services
+            //.AddGrpcClient<CurrencyService.CurrencyServiceClient>(options =>
+            //{
+            //    options.Address = new Uri(builder.Configuration["Grpc:FinanceServiceUrl"]);
+            //})
+            //.AddCallCredentials(async (context, metadata) =>
+            //{
+            //    // Получаем токен из текущего HTTP-контекста
+            //    var token = context.GetHttpContext().Request.Headers["Authorization"];
+            //    if (!string.IsNullOrEmpty(token))
+            //    {
+            //        metadata.Add("Authorization", token);
+            //    }
+            //});
 
             // Настройка HttpClient для микросервисов
             //builder.Services.AddHttpClient("UserService", client =>

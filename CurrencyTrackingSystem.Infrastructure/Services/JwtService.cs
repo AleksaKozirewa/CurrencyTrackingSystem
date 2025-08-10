@@ -1,5 +1,6 @@
 ﻿using CurrencyTrackingSystem.Application.Interfaces;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Primitives;
 using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
@@ -47,36 +48,31 @@ namespace CurrencyTrackingSystem.Infrastructure.Services
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
-        public int? ValidateToken(string token)
+        public Guid ValidateToken(string token)
         {
-            if (string.IsNullOrEmpty(token))
-                return null;
+            if (string.IsNullOrWhiteSpace(token))
+            {
+                return Guid.Empty;
+            }
 
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.UTF8.GetBytes(_secretKey);
 
-            try
+            tokenHandler.ValidateToken(token, new TokenValidationParameters
             {
-                tokenHandler.ValidateToken(token, new TokenValidationParameters
-                {
-                    ValidateIssuerSigningKey = true,
-                    IssuerSigningKey = new SymmetricSecurityKey(key),
-                    ValidateIssuer = true,
-                    ValidateAudience = true,
-                    ValidIssuer = _issuer,
-                    ValidAudience = _issuer,
-                    ClockSkew = TimeSpan.Zero
-                }, out SecurityToken validatedToken);
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new SymmetricSecurityKey(key),
+                ValidateIssuer = true,
+                ValidateAudience = true,
+                ValidIssuer = _issuer,
+                ValidAudience = _issuer,
+                ClockSkew = TimeSpan.Zero
+            }, out SecurityToken validatedToken);
 
-                var jwtToken = (JwtSecurityToken)validatedToken;
-                var userId = int.Parse(jwtToken.Claims.First(x => x.Type == ClaimTypes.Name).Value);
+            var jwtToken = (JwtSecurityToken)validatedToken;
+            var userId = Guid.Parse(jwtToken.Claims.First(x => x.Type == ClaimTypes.Name).Value);
 
-                return userId;
-            }
-            catch
-            {
-                return null;
-            }
+            return userId;
         }
 
         public bool IsInvalidatedToken(string token, HashSet<string> invalidatedTokens)

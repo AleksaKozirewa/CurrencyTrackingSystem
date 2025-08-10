@@ -1,0 +1,24 @@
+﻿syntax = "proto3";
+
+option csharp_namespace = "CurrencyTrackingSystem.FinanceService";
+
+package currency;
+
+service CurrencyNewService {
+    rpc GetUserCurrencies (CurrencyRequest) returns (CurrencyResponse);
+}
+
+message CurrencyRequest {
+    string user_id = 1;
+}
+
+message CurrencyResponse {
+    repeated CurrencyItem currencies = 1;
+    string error_message = 2;
+    int32 error_code = 3;
+}
+
+message CurrencyItem {
+    string name = 1;
+    double rate = 2;
+}

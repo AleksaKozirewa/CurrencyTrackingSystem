@@ -1,13 +1,19 @@
 ﻿using CurrencyTrackingSystem.Application.Interfaces;
 using CurrencyTrackingSystem.Domain.Interfaces;
+using CurrencyTrackingSystem.FinanceService.Service;
 using CurrencyTrackingSystem.Infrastructure.Persistence;
 using CurrencyTrackingSystem.Infrastructure.Repositories;
 using CurrencyTrackingSystem.Infrastructure.Services;
+using Grpc.Core.Interceptors;
+using Grpc.Core;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
+using System.Net;
+//using CurrencyTrackingSystem.API.Controllers;
 
 namespace CurrencyTrackingSystem.FinanceService
 {
@@ -17,12 +23,42 @@ namespace CurrencyTrackingSystem.FinanceService
         {
             var builder = WebApplication.CreateBuilder(args);
 
+            builder.Services.AddCors(o => o.AddPolicy("AllowAll", builder =>
+            {
+                builder.AllowAnyOrigin()
+                       .AllowAnyMethod()
+                       .AllowAnyHeader()
+                       .WithExposedHeaders("Grpc-Status", "Grpc-Message", "Grpc-Encoding", "Grpc-Accept-Encoding");
+            }));
+
+            // Отключаем требования HTTPS в development
+            if (builder.Environment.IsDevelopment())
+            {
+                builder.WebHost.ConfigureKestrel(options =>
+                {
+                    options.Listen(IPAddress.Any, 6003, listenOptions =>
+                    {
+                        listenOptions.Protocols = HttpProtocols.Http2; // HTTP/2 без HTTPS
+                    });
+                });
+            }
+
             // Регистрация сервисов
             builder.Services.AddScoped<ICurrencyService, CurrencyService>();
             builder.Services.AddScoped<ICurrencyRepository, CurrencyRepository>();
+            builder.Services.AddScoped<IJwtService, JwtService>();
 
             // Конфигурация сервисов
             builder.Services.AddControllers();
+
+            builder.Services.AddHttpContextAccessor(); // Добавить эту строку
+            builder.Services.AddGrpc();
+            //builder.Services.AddGrpc(options =>
+            //{
+            //    options.EnableDetailedErrors = true;
+            //    options.Interceptors.Add<GrpcAuthInterceptor>(); // Добавляем интерцептор для JWT
+            //});
+
             builder.Services.AddEndpointsApiExplorer();
 
             //builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -85,7 +121,7 @@ namespace CurrencyTrackingSystem.FinanceService
             //    };
             //});
 
-            
+
 
             //builder.Services.AddSwaggerGen();
 
@@ -158,6 +194,10 @@ namespace CurrencyTrackingSystem.FinanceService
                     };
                 });
 
+            // Регистрируем gRPC сервис
+            //builder.Services.AddGrpc();
+            //builder.Services.AddGrpcReflection();
+
             builder.Services.AddAuthorization();
 
             // Стандартная регистрация DbContext БЕЗ указания MigrationsAssembly
@@ -175,6 +215,8 @@ namespace CurrencyTrackingSystem.FinanceService
 
             var app = builder.Build();
 
+            app.UseCors("AllowAll");
+
             // Middleware должен быть подключен ДО MapControllers()
             app.UseSwagger(); // Генерирует /swagger/v1/swagger.json
             //app.UseSwaggerUI(c =>
@@ -191,9 +233,48 @@ namespace CurrencyTrackingSystem.FinanceService
             app.UseAuthorization();
             app.MapControllers();
 
+            // Настраиваем gRPC endpoint
+            //app.MapGrpcService<CurrencyGrpcService>();
+            app.MapGrpcService<CurrencyGrpcService>();
+            app.MapGet("/", () => "Finance gRPC Service is running.");
+
+            // Для тестирования (можно удалить в production)
+            //app.MapGrpcReflectionService();
+
+            //app.MapGet("/", () => "Communication with gRPC endpoints must be made through a gRPC client.");
 
 
             app.Run();
         }
     }
+
+    //public class GrpcAuthInterceptor : Interceptor
+    //{
+    //    private readonly IHttpContextAccessor _httpContextAccessor;
+
+    //    public GrpcAuthInterceptor(IHttpContextAccessor httpContextAccessor)
+    //    {
+    //        _httpContextAccessor = httpContextAccessor;
+    //    }
+
+    //    public override async Task<TResponse> UnaryServerHandler<TRequest, TResponse>(
+    //    TRequest request, ServerCallContext context, UnaryServerMethod<TRequest, TResponse> continuation)
+    //    {
+    //        var httpContext = _httpContextAccessor.HttpContext;
+    //        var token = context.RequestHeaders.FirstOrDefault(h => h.Key == "authorization")?.Value;
+
+    //        if (string.IsNullOrEmpty(token))
+    //        {
+    //            throw new RpcException(new Status(StatusCode.Unauthenticated, "Token is required"));
+    //        }
+
+    //        // Проверка валидности токена
+    //        if (!httpContext.User.Identity.IsAuthenticated)
+    //        {
+    //            throw new RpcException(new Status(StatusCode.Unauthenticated, "Invalid token"));
+    //        }
+
+    //        return await continuation(request, context);
+    //    }
+    //}
 }
