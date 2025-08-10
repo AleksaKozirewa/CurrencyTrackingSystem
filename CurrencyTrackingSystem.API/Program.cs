@@ -256,7 +256,6 @@ namespace CurrencyTrackingSystem.API
             });
 
             builder.Services.AddHostedService<CurrencyBackgroundService>();
-            builder.Services.AddHostedService<TokenCleanupBackgroundService>();
 
             // Добавьте эту регистрацию перед builder.Build()
             builder.Services.AddDbContext<AppDbContext>(options =>

@@ -87,12 +87,27 @@ namespace CurrencyTrackingSystem.UserService.Controllers
             //_logger.LogInformation("Пользователь вышел из системы");
             //return Ok(new { Message = "Logout successful" });
 
+            //var token = HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+
+            //_tokenBlacklistService.BlacklistTokenAsync(token);
+            ////_userService.Logout(token);
+
+            //return Ok(new { Message = "Token invalidated" });
+
             var token = HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
 
+            // Добавляем токен в черный список
             _tokenBlacklistService.BlacklistTokenAsync(token);
-            //_userService.Logout(token);
 
-            return Ok(new { Message = "Token invalidated" });
+            // Логируем выход
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            _logger.LogInformation("User {UserId} logged out. Token invalidated.", userId);
+
+            return Ok(new
+            {
+                Message = "Logout successful",
+                Details = "Token has been invalidated. Please remove it from client side."
+            });
         }
 
         //[HttpGet("healthcheck")]

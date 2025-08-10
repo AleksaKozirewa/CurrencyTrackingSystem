@@ -1,4 +1,5 @@
 ﻿using CurrencyTrackingSystem.Application.Interfaces;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using System;
@@ -14,78 +15,73 @@ namespace CurrencyTrackingSystem.Infrastructure.Services
     {
         private readonly IMemoryCache _cache;
         private readonly ILogger<TokenBlacklistService> _logger;
-        private readonly List<string> _tokens = new();
-        private readonly object _lock = new();
+        private readonly IDistributedCache _distributedCache; // Для распределённых систем
 
         public TokenBlacklistService(
             IMemoryCache cache,
-            ILogger<TokenBlacklistService> logger)
+            ILogger<TokenBlacklistService> logger,
+            IDistributedCache distributedCache = null)
         {
             _cache = cache;
             _logger = logger;
+            _distributedCache = distributedCache;
         }
 
-        public Task BlacklistTokenAsync(string token)
+        public async Task BlacklistTokenAsync(string token)
         {
             try
             {
                 var handler = new JwtSecurityTokenHandler();
-                if (handler.CanReadToken(token))
-                {
-                    var jwtToken = handler.ReadJwtToken(token);
-                    var expiry = jwtToken.ValidTo;
-                    var cacheEntryOptions = new MemoryCacheEntryOptions
-                    {
-                        AbsoluteExpiration = expiry
-                    };
-
-                    lock (_lock)
-                    {
-                        _cache.Set(token, true, cacheEntryOptions);
-                        _tokens.Add(token);
-                        _logger.LogInformation("Token blacklisted. Expires at: {Expiry}", expiry);
-                    }
-                }
-                else
+                if (!handler.CanReadToken(token))
                 {
                     _logger.LogWarning("Invalid JWT token format");
+                    return;
                 }
+
+                var jwtToken = handler.ReadJwtToken(token);
+                var expiry = jwtToken.ValidTo;
+
+                // Для одного сервера
+                _cache.Set(token, true, new MemoryCacheEntryOptions
+                {
+                    AbsoluteExpiration = expiry
+                });
+
+                // Для распределённых систем (если используется)
+                if (_distributedCache != null)
+                {
+                    await _distributedCache.SetAsync(
+                        key: $"blacklisted_token_{token}",
+                        value: Encoding.UTF8.GetBytes("1"),
+                        options: new DistributedCacheEntryOptions
+                        {
+                            AbsoluteExpiration = expiry
+                        });
+                }
+
+                _logger.LogInformation("Token blacklisted. Expires at: {Expiry}", expiry);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error blacklisting token");
                 throw;
             }
-
-            return Task.CompletedTask;
         }
 
-        public Task<bool> IsTokenBlacklistedAsync(string token)
+        public async Task<bool> IsTokenBlacklistedAsync(string token)
         {
-            lock (_lock)
-            {
-                return Task.FromResult(_cache.TryGetValue(token, out _));
-            }
-        }
+            // Проверка в локальном кеше
+            if (_cache.TryGetValue(token, out _))
+                return true;
 
-        public Task<int> CleanUpExpiredTokensAsync()
-        {
-            int removedCount = 0;
-            lock (_lock)
+            // Проверка в распределённом кеше (если используется)
+            if (_distributedCache != null)
             {
-                var now = DateTime.UtcNow;
-                for (int i = _tokens.Count - 1; i >= 0; i--)
-                {
-                    var token = _tokens[i];
-                    if (!_cache.TryGetValue(token, out _))
-                    {
-                        _tokens.RemoveAt(i);
-                        removedCount++;
-                    }
-                }
+                var result = await _distributedCache.GetAsync($"blacklisted_token_{token}");
+                if (result != null) return true;
             }
-            _logger.LogInformation("Removed {Count} expired tokens", removedCount);
-            return Task.FromResult(removedCount);
+
+            return false;
         }
     }
 }

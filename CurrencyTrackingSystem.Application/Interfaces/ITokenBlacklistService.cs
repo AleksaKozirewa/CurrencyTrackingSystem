@@ -10,6 +10,5 @@ namespace CurrencyTrackingSystem.Application.Interfaces
     {
         Task BlacklistTokenAsync(string token);
         Task<bool> IsTokenBlacklistedAsync(string token);
-        Task<int> CleanUpExpiredTokensAsync();
     }
 }
