@@ -16,8 +16,5 @@ namespace CurrencyTrackingSystem.Domain.Entities
         [Range(0.0001, double.MaxValue, ErrorMessage = "Exchange rate must be positive")]
         [Column(TypeName = "decimal(18,6)")]
         public decimal Rate { get; set; }
-
-        // Навигационное свойство
-        public virtual ICollection<UserFavoriteCurrency> UserFavorites { get; set; } = new HashSet<UserFavoriteCurrency>();
     }
 }

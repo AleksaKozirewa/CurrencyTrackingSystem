@@ -26,7 +26,7 @@ namespace CurrencyTrackingSystem.API
 
             builder.Services.AddSingleton<ITokenBlacklistService, GatewayTokenBlacklistService>();
 
-            builder.Services.AddHttpContextAccessor(); // В начало конфигурации
+            builder.Services.AddHttpContextAccessor();
 
             // Добавьте в DI контейнер
             builder.Services.AddGrpcClient<CurrencyNewService.CurrencyNewServiceClient>(options =>
@@ -37,7 +37,6 @@ namespace CurrencyTrackingSystem.API
             {
                 if (builder.Environment.IsDevelopment())
                 {
-                    // Разрешаем небезопасные соединения в development
                     var httpHandler = new HttpClientHandler
                     {
                         ServerCertificateCustomValidationCallback =
@@ -66,7 +65,6 @@ namespace CurrencyTrackingSystem.API
                     ValidAudience = builder.Configuration["Jwt:Audience"],
                     IssuerSigningKey = new SymmetricSecurityKey(
                         Encoding.UTF8.GetBytes(builder.Configuration["Jwt:SecretKey"]))
-                    //ClockSkew = TimeSpan.Zero
                 };
 
                 options.Events = new JwtBearerEvents

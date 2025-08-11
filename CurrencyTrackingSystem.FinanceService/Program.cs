@@ -45,7 +45,6 @@ namespace CurrencyTrackingSystem.FinanceService
             builder.Services.AddScoped<ICurrencyRepository, CurrencyRepository>();
             builder.Services.AddScoped<IJwtService, JwtService>();
 
-            // Конфигурация сервисов
             builder.Services.AddControllers();
             builder.Services.AddHttpContextAccessor();
             builder.Services.AddGrpc();
@@ -123,10 +122,9 @@ namespace CurrencyTrackingSystem.FinanceService
             app.UseSwaggerUI(c =>
             {
                 c.SwaggerEndpoint("/swagger/finance/swagger.json", "Finance Service API v1");
-                c.RoutePrefix = "swagger"; // Делает Swagger UI доступным по /swagger
+                c.RoutePrefix = "swagger";
             });
 
-            // Конфигурация middleware
             app.UseAuthorization();
             app.MapControllers();
 

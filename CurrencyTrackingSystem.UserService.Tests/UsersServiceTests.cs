@@ -3,7 +3,6 @@ using CurrencyTrackingSystem.Application.Interfaces;
 using CurrencyTrackingSystem.Domain.Entities;
 using CurrencyTrackingSystem.Infrastructure.Persistence;
 using CurrencyTrackingSystem.Infrastructure.Services;
-using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Moq;
 

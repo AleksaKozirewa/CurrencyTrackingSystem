@@ -2,16 +2,8 @@
 using CurrencyTrackingSystem.Application.Interfaces;
 using CurrencyTrackingSystem.Domain.Entities;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.InteropServices;
 using System.Security.Claims;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace CurrencyTrackingSystem.UserService.Controllers
 {

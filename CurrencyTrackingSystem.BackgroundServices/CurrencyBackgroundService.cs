@@ -1,7 +1,6 @@
 using CurrencyTrackingSystem.Domain.Entities;
 using CurrencyTrackingSystem.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
-using System.Net.Http;
 using System.Text;
 using System.Xml.Linq;
 
@@ -71,11 +70,9 @@ namespace CurrencyTrackingSystem.BackgroundServices
                 return doc.Descendants("Valute")
                     .Select(v => new Currency
                     {
-                        //Code = v.Element("CharCode")?.Value ?? string.Empty,
                         Name = v.Element("Name")?.Value ?? string.Empty,
                         Rate = decimal.Parse(v.Element("Value")?.Value ?? "0") /
                                decimal.Parse(v.Element("Nominal")?.Value ?? "1")
-                        //LastUpdated = date
                     });
             }
             catch (Exception ex)
@@ -94,7 +91,6 @@ namespace CurrencyTrackingSystem.BackgroundServices
                 if (existingCurrencies.TryGetValue(newRate.Name, out var existing))
                 {
                     existing.Rate = newRate.Rate;
-                    //existing.LastUpdated = newRate.LastUpdated;
                     dbContext.Currencies.Update(existing);
                 }
                 else
