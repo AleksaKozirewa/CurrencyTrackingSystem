@@ -4,7 +4,7 @@ using CurrencyTrackingSystem.Domain.Interfaces;
 using CurrencyTrackingSystem.Infrastructure.Services;
 using Moq;
 
-namespace CurrencyTrackingSystem.UserService.Tests
+namespace CurrencyTrackingSystem.Tests
 {
     public class CurrencyServiceTests
     {

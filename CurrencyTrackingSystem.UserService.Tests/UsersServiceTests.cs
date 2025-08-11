@@ -6,7 +6,7 @@ using CurrencyTrackingSystem.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 using Moq;
 
-namespace CurrencyTrackingSystem.UserService.Tests
+namespace CurrencyTrackingSystem.Tests
 {
     public class UsersServiceTests
     {
